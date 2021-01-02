@@ -12,6 +12,8 @@ env:
   global:
     - BINTRAY_REPO=custom
     - PACKAGE_VCS_URL=https://github.com/aursu/rpmbuild-oniguruma
+    - OS7=7.9.2009
+    - OS7TAG=7.9.2009
 
 install:
   - docker-compose -f rpmbuild/docker-compose.bintray.yml pull
