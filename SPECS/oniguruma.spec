@@ -1,13 +1,14 @@
 %undefine	_changelog_trimtime
 
-%global	mainver	6.9.4
-#%%global	betaver	rc3
+%global	mainver	6.9.6
+#%%global	betaver	rc4
+#%%define	prerelease	1
 
 %global	fedorarel	1
 
 Name:		oniguruma
 Version:	%{mainver}
-Release:	%{?betaver:0.}%{fedorarel}%{?betaver:.%betaver}%{?dist}
+Release:	%{?prerelease:0.}%{fedorarel}%{?betaver:.%betaver}%{?dist}
 Summary:	Regular expressions library
 
 License:	BSD
@@ -36,21 +37,15 @@ developing applications that use %{name}.
 %setup -q -n onig-%{mainver}
 %{__sed} -i.multilib -e 's|-L@libdir@||' onig-config.in
 
-%if 0
-for f in \
-	README.ja \
-	doc/API.ja \
-	doc/FAQ.ja \
-	doc/RE.ja
-	do
-	iconv -f EUC-JP -t UTF-8 $f > $f.tmp && \
-		( touch -r $f $f.tmp ; %{__mv} -f $f.tmp $f ) || \
-		%{__rm} -f $f.tmp
-done
-%endif
-
 %build
+# This package fails its testsuite when compiled with LTO, but the real problem
+# is that it ends up mixing and matching regexp bits between itself and glibc.
+# Disable LTO
+%define _lto_cflags %{nil}
+
 %configure \
+	--enable-posix-api \
+	--enable-binary-compatible-posix-api \
 	--disable-silent-rules \
 	--disable-static \
 	--with-rubydir=%{_bindir}
@@ -101,9 +96,12 @@ find $RPM_BUILD_ROOT -name '*.la' \
 
 %{_libdir}/libonig.so
 %{_includedir}/onig*.h
-%{_libdir}/pkgconfig/%{name}.pc	
+%{_libdir}/pkgconfig/%{name}.pc
 
 %changelog
+* Thu Nov  5 2020 Mamoru TASAKA <mtasaka@fedoraproject.org> - 6.9.6-1
+- 6.9.6
+
 * Fri Nov 29 2019 Mamoru TASAKA <mtasaka@fedoraproject.org> - 6.9.4-1
 - 6.9.4 final
 
